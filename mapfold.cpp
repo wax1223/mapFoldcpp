@@ -34,6 +34,7 @@ class MapFoldList
 public:
     bool addKey(Key k)
     {
+        return false;
     }
     void addElem(Key k, LinerOrdering l)
     {
@@ -52,54 +53,84 @@ LinerOrdering initLinearOrdering(int n)
     l.reserve(n * 2);
     for (int i = 0; i < n * 2; i++)
     {
-        l.push_back(i);
+        l.push_back(i + 1);
     }
     return l;
 }
 
 int two_times_n_map()
 {
+    return 0;
 }
 
 IndegreeList genIndegreeList(LinerOrdering l, Map m)
 {
+    IndegreeList idl;
+    return idl;
 }
 
 bool testLinearOrdering(IndegreeList idl, LinerOrdering l)
 {
+    return false;
 }
 
 Map genMVmap(LinerOrdering l)
 {
+    Map m;
+    return m;
 }
 
 bool testEast(LinerOrdering l)
 {
+    return false;
 }
 
 bool testWest(LinerOrdering l)
 {
+    return false;
 }
 
 bool testNorth(LinerOrdering l)
 {
+    return false;
 }
 
 bool testSouth(LinerOrdering l)
 {
+    return false;
 }
 
 Key mapToKey(Map m)
 {
+    Key k = 0;
+    return k;
 }
 
 Map keyToMap(Key k)
 {
+    Map m;
+    return m;
 }
 
-int main(int argc, char const *argv[])
+void TestPerm()
 {
+    LinerOrdering l = initLinearOrdering(2);
+    do
+    {
+        for (int i : l)
+        {
+            std::cout << i;
+        }
+        std::cout << " ";
+    } while (nextPerm(l));
+}
+void Test()
+{
+    TestPerm();
+}
 
+void start()
+{
     MapFoldList mfl;
     LinerOrdering l = initLinearOrdering(2);
     do
@@ -123,6 +154,10 @@ int main(int argc, char const *argv[])
             }
         }
     } while (nextPerm(l));
+}
 
+int main(int argc, char const *argv[])
+{
+    Test();
     return 0;
 }
