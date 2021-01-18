@@ -24,6 +24,8 @@ struct Map
 {
     std::vector<MVPattern> rowMvs;
     std::vector<MVPattern> columnMvs;
+    int rowCount;
+    int columnCount;
 };
 
 class MapFoldList
@@ -46,12 +48,13 @@ bool nextPerm(LinerOrdering &p)
     return std::next_permutation(p.begin(), p.end());
 }
 
-LinerOrdering initLinearOrdering(int n)
+LinerOrdering initLinearOrdering(int r, int c)
 {
-    assert(n > 1);
+    assert(r > 1);
+    assert(c > 1);
     LinerOrdering l;
-    l.reserve(n * 2);
-    for (int i = 0; i < n * 2; i++)
+    l.reserve(r * c);
+    for (int i = 0; i < r * c; i++)
     {
         l.push_back(i + 1);
     }
@@ -102,7 +105,9 @@ bool testSouth(LinerOrdering l)
 
 Key mapToKey(Map m)
 {
-    Key k = 0;
+    (void)(m);
+    Key k;
+    k = 0;
     return k;
 }
 
@@ -114,7 +119,9 @@ Map keyToMap(Key k)
 
 void TestPerm()
 {
-    LinerOrdering l = initLinearOrdering(2);
+    int rowCount = 2;
+    int columnCount = 2;
+    LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     do
     {
         for (int i : l)
@@ -132,7 +139,9 @@ void Test()
 void start()
 {
     MapFoldList mfl;
-    LinerOrdering l = initLinearOrdering(2);
+    int rowCount = 2;
+    int columnCount = 2;
+    LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     do
     {
         Map map = genMVmap(l);
