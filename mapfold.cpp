@@ -6,7 +6,6 @@
 #include <vector>
 #include <cassert>
 
-
 enum MV
 {
     UNUSED, // The unused is setted for map to key function
@@ -142,18 +141,38 @@ Map genMVmap(LinerOrdering l, int rowCount, int columnCount)
     m.rowMvs.resize(rowCount);
     m.columnMvs.resize(rowCount - 1);
 
-    std::vector<std::vector<uint8_t>> invertIndexList;
-    invertIndexList.resize(rowCount);
-    for (auto &l : invertIndexList)
+    // std::vector<std::vector<uint8_t>> indexList;
+    std::vector<std::vector<uint8_t>> invertedIndexList;
+    // indexList.resize(rowCount);
+    invertedIndexList.resize(rowCount);
+    for (int i = 0; i < invertedIndexList.size(); i++)
     {
-        l.resize(columnCount);
+        // indexList[i].resize(columnCount);
+        invertedIndexList[i].resize(columnCount);
     }
 
+    // for (int i = 0; i < rowCount; i++)
+    // {
+    //     for (int j = 0; j < columnCount; j++)
+    //     {
+    //         indexList[i][j] = l[i * rowCount + j];
+    //     }
+    // }
+
+    //Invert index
     for (int i = 0; i < rowCount; i++)
     {
         for (int j = 0; j < columnCount; j++)
         {
-            invertIndexList[i][j] = l[i * rowCount + j];
+            auto &v = l[i * columnCount + j];
+            int thisi = v / columnCount;
+            int thisj = v - thisi * columnCount - 1;
+            if (thisj == -1)
+            {
+                thisi--;
+                thisj = columnCount - 1;
+            }
+            invertedIndexList[thisi][thisj] = i * columnCount + j;
         }
     }
 
@@ -164,7 +183,7 @@ Map genMVmap(LinerOrdering l, int rowCount, int columnCount)
         thisRow.reserve(columnCount - 1);
         for (int c = 0; c < columnCount - 1; c++)
         {
-            bool isUpper = invertIndexList[r][c] > invertIndexList[r][c + 1] ? true : false;
+            bool isUpper = invertedIndexList[r][c] > invertedIndexList[r][c + 1] ? true : false;
             bool isFront = r % 2 == c % 2 ? true : false;
 
             if (isFront && isUpper)
@@ -193,7 +212,7 @@ Map genMVmap(LinerOrdering l, int rowCount, int columnCount)
         thisColumn.reserve(columnCount);
         for (int c = 0; c < columnCount; c++)
         {
-            bool isUpper = invertIndexList[r][c] > invertIndexList[r + 1][c] ? true : false;
+            bool isUpper = invertedIndexList[r][c] > invertedIndexList[r + 1][c] ? true : false;
             bool isFront = r % 2 == c % 2 ? true : false;
 
             if (isFront && isUpper)
@@ -240,27 +259,37 @@ bool testSouth(LinerOrdering l)
 
 Key mapToKey(Map m)
 {
-    // static std::unordered_map<int32_t, uint8_t> convertmap = {
-    //     {1, 1}
-    // };
-    /*
-    ['MVVV', '1'],
-    ['VMVV', '2'],
-    ['VVMV', '3'],
-    ['VVVM', '4'],
-    ['VMMM', '5'],
-    ['MVMM', '6'],
-    ['MMVM', '7'],
-    ['MMMV', '8']
-    */
-
+    static std::unordered_map<int32_t, uint8_t> convertmap = {
+        {1222, 1},
+        {2122, 2},
+        {2212, 3},
+        {2221, 4},
+        {2111, 5},
+        {1211, 6},
+        {1121, 7},
+        {1112, 8},
+    };
     Key k;
     k = 0;
     int rc = m.rowMvs.size();
     int cc = m.rowMvs[0].size();
     auto &rowMv = m.rowMvs;
-    auto &columnMv = m.rowMvs;
+    auto &columnMv = m.columnMvs;
+    auto &firstrow = m.rowMvs[0];
+    auto &secondrow = m.rowMvs[1];
+    for (int i = 0; i < rowMv[0].size(); i++)
+    {
+        uint8_t up = firstrow[i];
+        uint8_t down = secondrow[i];
+        uint8_t left = columnMv[0][i];
+        uint8_t right = columnMv[0][i + 1];
+        int v = up * 1000 + down * 100 + left * 10 + right;
+        auto iter = convertmap.find(v);
+        if (iter == convertmap.end())
+            return 0;
 
+        k = k * 10 + iter->second;
+    }
     return k;
 }
 /*
@@ -332,12 +361,27 @@ void testIndexList()
         std::cout << " ";
     }
 }
+void testMapToKey()
+{
+    int rowCount = 2;
+    int columnCount = 5;
+    // LinerOrdering l = initLinearOrdering(rowCount, columnCount);
+    // LinerOrdering l = {1, 2, 4, 3}; //8
+    // LinerOrdering l = {3,5,10,8,6,7,9,4,2,1}; // 4666
+    LinerOrdering l = {1, 2, 4, 9, 7, 6, 8, 10, 5, 3}; // 8222
+    Map map = genMVmap(l, rowCount, columnCount);
+    IndegreeList idl = genIndegreeList(l, map);
+
+    Key k = mapToKey(map);
+    std::cout << k;
+}
 
 void test()
 {
-    testPerm();
-    testGenMVmap();
-    testIndexList();
+    // testPerm();
+    // testGenMVmap();
+    // testIndexList();
+    testMapToKey();
 }
 
 void start()
