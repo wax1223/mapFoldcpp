@@ -25,16 +25,42 @@ struct Map
 
 class MapFoldList
 {
-    Key key;
-    std::vector<LinerOrdering> validLinearOrdering;
-
+    using LinearOrderingList = std::vector<LinerOrdering>;
+    std::unordered_map<Key, LinearOrderingList> map;
 public:
     bool addKey(Key k)
     {
-        return false;
+        Key bk = k;
+        while (true)
+        {
+            int v = k / 10;
+            if (v != 0)
+            {
+                k = v;
+            }
+            else
+            {
+                break;
+            }
+        }
+        if(k > 4) {
+            return false;
+        }
+        auto iter = map.find(bk);
+        if(iter == map.end()){
+            LinearOrderingList l;
+            map[bk] = l;
+        }
+        return true;
     }
     void addElem(Key k, LinerOrdering l)
     {
+        auto iter = map.find(k);
+        assert(iter != map.end());
+        map[k].push_back(l);
+    }
+    size_t getLen(){
+        return map.size();
     }
 };
 
@@ -376,12 +402,35 @@ void testMapToKey()
     std::cout << k;
 }
 
+void testMfl(){
+    MapFoldList mfl;
+    int rowCount = 2;
+    int columnCount = 5;
+    LinerOrdering l = initLinearOrdering(rowCount, columnCount);
+    do
+    {
+        Map map = genMVmap(l, rowCount, columnCount);
+        IndegreeList idl = genIndegreeList(l, map);
+
+        Key k = mapToKey(map);
+
+        // Not a valid mv pattern
+        if (k <= 0)
+        {
+            continue;
+        }
+
+        mfl.addKey(k);
+    } while (nextPerm(l));
+    std::cout << mfl.getLen()<< std::endl;
+}
 void test()
 {
     // testPerm();
     // testGenMVmap();
     // testIndexList();
-    testMapToKey();
+    // testMapToKey();
+    testMfl();
 }
 
 void start()
