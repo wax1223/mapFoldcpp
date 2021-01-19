@@ -6,8 +6,10 @@
 #include <vector>
 #include <cassert>
 
+
 enum MV
 {
+    UNUSED, // The unused is setted for map to key function
     M,
     V
 };
@@ -238,6 +240,20 @@ bool testSouth(LinerOrdering l)
 
 Key mapToKey(Map m)
 {
+    // static std::unordered_map<int32_t, uint8_t> convertmap = {
+    //     {1, 1}
+    // };
+    /*
+    ['MVVV', '1'],
+    ['VMVV', '2'],
+    ['VVMV', '3'],
+    ['VVVM', '4'],
+    ['VMMM', '5'],
+    ['MVMM', '6'],
+    ['MMVM', '7'],
+    ['MMMV', '8']
+    */
+
     Key k;
     k = 0;
     int rc = m.rowMvs.size();
@@ -269,7 +285,7 @@ void testPerm()
     } while (nextPerm(l));
 }
 
-#define MoV(f) ((f > 0) ? 'V' : 'M')
+#define MoV(f) ((f > 1) ? 'V' : 'M')
 void testGenMVmap()
 {
     int rowCount = 2;
@@ -306,10 +322,12 @@ void testIndexList()
     Map map = genMVmap(l, rowCount, columnCount);
     IndegreeList idl = genIndegreeList(l, map);
 
-    for(auto& r : idl){
+    for (auto &r : idl)
+    {
 
-        for(auto &c: r){
-            std::cout << (int)c;    
+        for (auto &c : r)
+        {
+            std::cout << (int)c;
         }
         std::cout << " ";
     }
@@ -317,8 +335,8 @@ void testIndexList()
 
 void test()
 {
-    // TestPerm();
-    // testGenMVmap();
+    testPerm();
+    testGenMVmap();
     testIndexList();
 }
 
