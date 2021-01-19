@@ -20,8 +20,6 @@ struct Map
 {
     std::vector<MVPattern> rowMvs;
     std::vector<MVPattern> columnMvs;
-    int rowCount;
-    int columnCount;
 };
 
 class MapFoldList
@@ -65,6 +63,67 @@ int two_times_n_map()
 IndegreeList genIndegreeList(LinerOrdering l, Map m)
 {
     IndegreeList idl;
+    int rc = m.rowMvs.size();
+    int cc = m.columnMvs[0].size();
+
+    idl.resize(rc);
+
+    for (auto &i : idl)
+    {
+        i.resize(cc);
+    }
+
+    //rows
+    for (int r = 0; r < rc; r++)
+    {
+        auto &thisrow = m.rowMvs[r];
+        for (int i = 0; i < thisrow.size(); i++)
+        {
+            bool isFront = r % 2 == i % 2 ? true : false;
+            if (thisrow[i] == M && isFront)
+            {
+                idl[r][i + 1]++;
+            }
+            else if (thisrow[i] == M && !isFront)
+            {
+                idl[r][i]++;
+            }
+            else if (thisrow[i] == V && isFront)
+            {
+                idl[r][i]++;
+            }
+            else
+            {
+                idl[r][i + 1]++;
+            }
+        }
+    }
+    //columns
+    for (int r = 0; r < rc - 1; r++)
+    {
+        auto &thisColumn = m.columnMvs[r];
+        for (int j = 0; j < thisColumn.size(); j++)
+        {
+            bool isFront = r % 2 == j % 2 ? true : false;
+            if (thisColumn[j] == M && isFront)
+            {
+                idl[r + 1][j]++;
+            }
+            else if (thisColumn[j] == M && !isFront)
+            {
+                idl[r][j]++;
+            }
+            else if (thisColumn[j] == V && isFront)
+            {
+                idl[r][j]++;
+            }
+            else
+            {
+                idl[r + 1][j]++;
+            }
+        }
+    }
+
     return idl;
 }
 
@@ -73,7 +132,9 @@ bool testLinearOrdering(IndegreeList idl, LinerOrdering l)
     return false;
 }
 
-Map genMV(LinerOrdering l, int rowCount, int columnCount)
+//TODO: maybe add a reference parameter for map and then we will
+// no need to allocate memory each time when generating MV map.
+Map genMVmap(LinerOrdering l, int rowCount, int columnCount)
 {
     Map m;
     m.rowMvs.resize(rowCount);
@@ -178,10 +239,11 @@ bool testSouth(LinerOrdering l)
 Key mapToKey(Map m)
 {
     Key k;
-    int rc = m.rowCount;
-    int cc = m.columnCount;
+    k = 0;
+    int rc = m.rowMvs.size();
+    int cc = m.rowMvs[0].size();
     auto &rowMv = m.rowMvs;
-    auto &columnMv = m.columnMvs;
+    auto &columnMv = m.rowMvs;
 
     return k;
 }
@@ -192,7 +254,7 @@ Map keyToMap(Key k)
     return m;
 }
 */
-void TestPerm()
+void testPerm()
 {
     int rowCount = 2;
     int columnCount = 2;
@@ -207,15 +269,15 @@ void TestPerm()
     } while (nextPerm(l));
 }
 
-#define MoV(f) ((f > 0)? 'V' : 'M')
-void TestGenMV()
+#define MoV(f) ((f > 0) ? 'V' : 'M')
+void testGenMVmap()
 {
     int rowCount = 2;
     int columnCount = 5;
 
     LinerOrdering l = initLinearOrdering(rowCount, columnCount);
-    Map m = genMV(l, rowCount, columnCount);
-    
+    Map m = genMVmap(l, rowCount, columnCount);
+
     for (int r = 0; r < m.rowMvs.size(); r++)
     {
         auto &tr = m.rowMvs[r];
@@ -225,19 +287,39 @@ void TestGenMV()
         }
         std::cout << " ";
     }
-    for(int c = 0; c < m.columnMvs.size(); c++){
-        auto& tc = m.columnMvs[c];
-        for (int i = 0; i < tc.size(); i++){
+    for (int c = 0; c < m.columnMvs.size(); c++)
+    {
+        auto &tc = m.columnMvs[c];
+        for (int i = 0; i < tc.size(); i++)
+        {
             std::cout << MoV(tc[i]);
         }
         std::cout << " ";
     }
-    
 }
-void Test()
+
+void testIndexList()
+{
+    int rowCount = 2;
+    int columnCount = 5;
+    LinerOrdering l = initLinearOrdering(rowCount, columnCount);
+    Map map = genMVmap(l, rowCount, columnCount);
+    IndegreeList idl = genIndegreeList(l, map);
+
+    for(auto& r : idl){
+
+        for(auto &c: r){
+            std::cout << (int)c;    
+        }
+        std::cout << " ";
+    }
+}
+
+void test()
 {
     // TestPerm();
-    TestGenMV();
+    // testGenMVmap();
+    testIndexList();
 }
 
 void start()
@@ -248,7 +330,7 @@ void start()
     LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     do
     {
-        Map map = genMV(l, rowCount, columnCount);
+        Map map = genMVmap(l, rowCount, columnCount);
         IndegreeList idl = genIndegreeList(l, map);
 
         Key k = mapToKey(map);
@@ -271,6 +353,6 @@ void start()
 
 int main(int argc, char const *argv[])
 {
-    Test();
+    test();
     return 0;
 }
