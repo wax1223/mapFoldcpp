@@ -2,10 +2,12 @@
 #include <algorithm>
 #include <stack>
 #include <unordered_map>
-#include <cstdint>
 #include <vector>
+#include <string>
+#include <cstdint>
 #include <cassert>
 #include <cmath>
+#include <chrono>
 
 enum MV
 {
@@ -28,6 +30,11 @@ class MapFoldList
 {
     using LinearOrderingList = std::vector<LinerOrdering>;
     std::unordered_map<Key, LinearOrderingList> map;
+    char orderTocharTable[36] = {
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+        'u', 'v', 'w', 'x', 'y', 'z'};
 
 public:
     bool addKey(Key k)
@@ -66,6 +73,29 @@ public:
     size_t getLen()
     {
         return map.size();
+    }
+    void print()
+    {
+        for (auto &kl : map)
+        {
+            Key k = kl.first;
+            LinearOrderingList l = kl.second;
+            std::string allLO;
+            std::string oneLO;
+            for (auto &&r : l)
+            {
+                oneLO.clear();
+                if (!allLO.empty())
+                    allLO += ',';
+                for (auto &c : r)
+                {
+                    char t = orderTocharTable[c];
+                    oneLO += t;
+                }
+                allLO += oneLO;
+            }
+            std::cout << k << ":" << allLO << std::endl;
+        }
     }
 };
 
@@ -365,7 +395,7 @@ bool testWest(LinerOrdering l)
     {
         uint8_t elem = l[i];
 
-        if (elem % halfLen == 1 || 
+        if (elem % halfLen == 1 ||
             (halfLen % 2 == 0 && elem % halfLen == 0))
             continue;
 
@@ -377,7 +407,8 @@ bool testWest(LinerOrdering l)
 
         uint8_t top = s.top();
         int k = elem % halfLen;
-        if( k == 0) k = halfLen;
+        if (k == 0)
+            k = halfLen;
 
         if (k % 2 == 0 && top - elem == 1)
         {
@@ -606,11 +637,11 @@ void test()
     testButterfly();
 }
 
-void start()
+void findmapfold(int rows, int columns)
 {
     MapFoldList mfl;
-    int rowCount = 2;
-    int columnCount = 3;
+    int rowCount = rows;
+    int columnCount = columns;
     LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     do
     {
@@ -633,11 +664,21 @@ void start()
             }
         }
     } while (nextPerm(l));
+    mfl.print();
+    std::cout << "total: " << mfl.getLen() << std::endl;
 }
 
 int main(int argc, char const *argv[])
 {
-    test();
-    start();
+    // test();
+    if (argc < 3)
+        return 0;
+    int rows = std::stoi(argv[1]);
+    int columns = std::stoi(argv[2]);
+    auto start = std::chrono::high_resolution_clock::now();
+    findmapfold(rows, columns);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
     return 0;
 }
