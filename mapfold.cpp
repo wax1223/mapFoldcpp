@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <vector>
 #include <cassert>
+#include <cmath>
 
 enum MV
 {
@@ -27,6 +28,7 @@ class MapFoldList
 {
     using LinearOrderingList = std::vector<LinerOrdering>;
     std::unordered_map<Key, LinearOrderingList> map;
+
 public:
     bool addKey(Key k)
     {
@@ -43,11 +45,13 @@ public:
                 break;
             }
         }
-        if(k > 4) {
+        if (k > 4)
+        {
             return false;
         }
         auto iter = map.find(bk);
-        if(iter == map.end()){
+        if (iter == map.end())
+        {
             LinearOrderingList l;
             map[bk] = l;
         }
@@ -59,7 +63,8 @@ public:
         assert(iter != map.end());
         map[k].push_back(l);
     }
-    size_t getLen(){
+    size_t getLen()
+    {
         return map.size();
     }
 };
@@ -156,7 +161,59 @@ IndegreeList genIndegreeList(LinerOrdering l, Map m)
 
 bool testLinearOrdering(IndegreeList idl, LinerOrdering l)
 {
-    return false;
+    int halflen = l.size() / 2;
+    for (int i = 0; i < l.size(); i++)
+    {
+        const uint8_t e = l[i];
+        int thisi = e / halflen;
+        int thisj = e - halflen * thisi - 1;
+        if (thisj == -1)
+        {
+            thisi--;
+            thisj = halflen - 1;
+        }
+        if (idl[thisi][thisj] == 0)
+        {
+            if (thisi > 0)
+            {
+                // not in the first row
+                if (idl[thisi - 1][thisj] > 0)
+                    idl[thisi - 1][thisj]--;
+            }
+
+            if (thisi < idl.size() - 1)
+            {
+                // not in the last row
+                if (idl[thisi + 1][thisj] > 0)
+                    idl[thisi + 1][thisj]--;
+            }
+
+            if (thisj > 0)
+            {
+                //not in the first column
+                if (idl[thisi][thisj - 1] > 0)
+                    idl[thisi][thisj - 1]--;
+            }
+            if (thisj < halflen - 1)
+            {
+                if (idl[thisi][thisj + 1] > 0)
+                    idl[thisi][thisj + 1]--;
+            }
+        }
+        else
+        {
+            return false;
+        }
+    }
+    for (auto &r : idl)
+    {
+        for (auto &c : r)
+        {
+            assert(c == 0);
+        }
+    }
+
+    return true;
 }
 
 //TODO: maybe add a reference parameter for map and then we will
@@ -265,22 +322,115 @@ Map genMVmap(LinerOrdering l, int rowCount, int columnCount)
 
 bool testEast(LinerOrdering l)
 {
-    return false;
+    std::stack<uint8_t> s;
+    int halfLen = l.size() / 2;
+
+    for (int i = 0; i < l.size(); i++)
+    {
+        uint8_t elem = l[i];
+
+        if (halfLen % 2 != 0 && elem % halfLen == 0)
+            continue;
+        if (s.empty())
+        {
+            s.push(elem);
+            continue;
+        }
+
+        uint8_t top = s.top();
+        int k = elem % halfLen;
+        if (k % 2 == 0 && elem - top == 1)
+        {
+            s.pop();
+        }
+        else if (k % 2 == 1 && top - elem == 1)
+        {
+            s.pop();
+        }
+        else
+        {
+            assert(elem != top);
+            s.push(elem);
+        }
+    }
+    return s.empty();
 }
 
 bool testWest(LinerOrdering l)
 {
-    return false;
+    std::stack<uint8_t> s;
+    int halfLen = l.size() / 2;
+
+    for (int i = 0; i < l.size(); i++)
+    {
+        uint8_t elem = l[i];
+
+        if (elem % halfLen == 1 || 
+            (halfLen % 2 == 0 && elem % halfLen == 0))
+            continue;
+
+        if (s.empty())
+        {
+            s.push(elem);
+            continue;
+        }
+
+        uint8_t top = s.top();
+        int k = elem % halfLen;
+        if( k == 0) k = halfLen;
+
+        if (k % 2 == 0 && top - elem == 1)
+        {
+            s.pop();
+        }
+        else if (k % 2 == 1 && elem - top == 1)
+        {
+            s.pop();
+        }
+        else
+        {
+            assert(elem != top);
+            s.push(elem);
+        }
+    }
+    return s.empty();
 }
 
 bool testNorth(LinerOrdering l)
 {
-    return false;
+    return true;
 }
 
 bool testSouth(LinerOrdering l)
 {
-    return false;
+    std::stack<uint8_t> s;
+    int halfLen = l.size() / 2;
+
+    for (int i = 0; i < l.size(); i++)
+    {
+        uint8_t elem = l[i];
+
+        // if (halfLen % 2 == 0 && elem % halfLen == 1)
+        //     continue;
+
+        if (s.empty())
+        {
+            s.push(elem);
+            continue;
+        }
+
+        uint8_t top = s.top();
+        if (abs(top - elem) == halfLen)
+        {
+            s.pop();
+        }
+        else
+        {
+            assert(elem != top);
+            s.push(elem);
+        }
+    }
+    return s.empty();
 }
 
 Key mapToKey(Map m)
@@ -402,7 +552,8 @@ void testMapToKey()
     std::cout << k;
 }
 
-void testMfl(){
+void testMfl()
+{
     MapFoldList mfl;
     int rowCount = 2;
     int columnCount = 5;
@@ -422,22 +573,44 @@ void testMfl(){
 
         mfl.addKey(k);
     } while (nextPerm(l));
-    std::cout << mfl.getLen()<< std::endl;
+    std::cout << mfl.getLen() << std::endl;
 }
+
+void testTestLinearOrdergin()
+{
+    int rowCount = 2;
+    int columnCount = 2;
+    LinerOrdering l = {1, 3, 2, 4};
+    Map map = genMVmap(l, rowCount, columnCount);
+    IndegreeList idl = genIndegreeList(l, map);
+
+    Key k = mapToKey(map);
+    std::cout << testLinearOrdering(idl, l);
+}
+void testButterfly()
+{
+    LinerOrdering l = {1, 2, 4, 3};
+    std::cout << testEast(l) << std::endl;
+    std::cout << testWest(l) << std::endl;
+    std::cout << testSouth(l) << std::endl;
+}
+
 void test()
 {
     // testPerm();
     // testGenMVmap();
     // testIndexList();
     // testMapToKey();
-    testMfl();
+    // testMfl();
+    testTestLinearOrdergin();
+    testButterfly();
 }
 
 void start()
 {
     MapFoldList mfl;
     int rowCount = 2;
-    int columnCount = 2;
+    int columnCount = 3;
     LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     do
     {
@@ -465,5 +638,6 @@ void start()
 int main(int argc, char const *argv[])
 {
     test();
+    start();
     return 0;
 }
