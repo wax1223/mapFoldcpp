@@ -15,7 +15,7 @@ enum MV
     M,
     V
 };
-using Key = uint32_t;
+using Key = uint64_t;
 using LinerOrdering = std::vector<uint8_t>;
 using IndegreeList = std::vector<std::vector<uint8_t>>;
 using MVPattern = std::vector<MV>;
@@ -122,7 +122,7 @@ int two_times_n_map()
     return 0;
 }
 
-IndegreeList genIndegreeList(LinerOrdering l, Map m)
+IndegreeList genIndegreeList(Map m)
 {
     IndegreeList idl;
     int rc = m.rowMvs.size();
@@ -499,13 +499,102 @@ Key mapToKey(Map m)
     }
     return k;
 }
-/*
+
 Map keyToMap(Key k)
 {
     Map m;
+    uint lenOfk = 0;
+    Key bk = k;
+    while (bk >= 1)
+    {
+        bk /= 10;
+        lenOfk++;
+    }
+    // 2 x n map
+    m.columnMvs.resize(1);
+    m.rowMvs.resize(2);
+
+    for (int i = 0; i < lenOfk; i++)
+    {
+        uint64_t thispow = pow(10, lenOfk - i - 1);
+        int thisk = k / thispow;
+        k -= thisk * thispow;
+        bool lastcolumn = lenOfk - i  == 1 ? true : false;
+        switch (thisk)
+        {
+        case 1:
+        {
+            m.rowMvs[0].push_back(M);
+            m.rowMvs[1].push_back(V);
+            m.columnMvs[0].push_back(V);
+            if(lastcolumn) m.columnMvs[0].push_back(V);
+            break;
+        }
+        case 2:
+        {
+            m.rowMvs[0].push_back(V);
+            m.rowMvs[1].push_back(M);
+            m.columnMvs[0].push_back(V);
+            if(lastcolumn) m.columnMvs[0].push_back(V);
+            break;
+        }
+        case 3:
+        {
+            m.rowMvs[0].push_back(V);
+            m.rowMvs[1].push_back(V);
+            m.columnMvs[0].push_back(M);
+            if(lastcolumn) m.columnMvs[0].push_back(V);
+            break;
+        }
+        case 4:
+        {
+            m.rowMvs[0].push_back(V);
+            m.rowMvs[1].push_back(V);
+            m.columnMvs[0].push_back(V);
+            if(lastcolumn) m.columnMvs[0].push_back(M);
+            break;
+        }
+        case 5:
+        {
+            m.rowMvs[0].push_back(V);
+            m.rowMvs[1].push_back(M);
+            m.columnMvs[0].push_back(M);
+            if(lastcolumn) m.columnMvs[0].push_back(M);
+            break;
+        }
+        case 6:
+        {
+            m.rowMvs[0].push_back(M);
+            m.rowMvs[1].push_back(V);
+            m.columnMvs[0].push_back(M);
+            if(lastcolumn) m.columnMvs[0].push_back(M);
+            break;
+        }
+
+        case 7:
+        {
+            m.rowMvs[0].push_back(M);
+            m.rowMvs[1].push_back(M);
+            m.columnMvs[0].push_back(V);
+            if(lastcolumn) m.columnMvs[0].push_back(M);
+            break;
+        }
+        case 8:
+        {
+            m.rowMvs[0].push_back(M);
+            m.rowMvs[1].push_back(M);
+            m.columnMvs[0].push_back(M);
+            if(lastcolumn) m.columnMvs[0].push_back(V);
+            break;
+        }
+        default:{
+            assert(false);
+        }
+        }
+    }
     return m;
 }
-*/
+
 void testPerm()
 {
     int rowCount = 2;
@@ -556,7 +645,7 @@ void testIndexList()
     int columnCount = 5;
     LinerOrdering l = initLinearOrdering(rowCount, columnCount);
     Map map = genMVmap(l, rowCount, columnCount);
-    IndegreeList idl = genIndegreeList(l, map);
+    IndegreeList idl = genIndegreeList(map);
 
     for (auto &r : idl)
     {
@@ -577,7 +666,7 @@ void testMapToKey()
     // LinerOrdering l = {3,5,10,8,6,7,9,4,2,1}; // 4666
     LinerOrdering l = {1, 2, 4, 9, 7, 6, 8, 10, 5, 3}; // 8222
     Map map = genMVmap(l, rowCount, columnCount);
-    IndegreeList idl = genIndegreeList(l, map);
+    IndegreeList idl = genIndegreeList(map);
 
     Key k = mapToKey(map);
     std::cout << k;
@@ -592,7 +681,7 @@ void testMfl()
     do
     {
         Map map = genMVmap(l, rowCount, columnCount);
-        IndegreeList idl = genIndegreeList(l, map);
+        IndegreeList idl = genIndegreeList(map);
 
         Key k = mapToKey(map);
 
@@ -613,7 +702,7 @@ void testTestLinearOrdergin()
     int columnCount = 2;
     LinerOrdering l = {1, 3, 2, 4};
     Map map = genMVmap(l, rowCount, columnCount);
-    IndegreeList idl = genIndegreeList(l, map);
+    IndegreeList idl = genIndegreeList(map);
 
     Key k = mapToKey(map);
     std::cout << testLinearOrdering(idl, l);
@@ -626,6 +715,11 @@ void testButterfly()
     std::cout << testSouth(l) << std::endl;
 }
 
+void testKeyToMap(){
+    auto thismap = keyToMap(122121);
+    
+}
+
 void test()
 {
     // testPerm();
@@ -633,8 +727,10 @@ void test()
     // testIndexList();
     // testMapToKey();
     // testMfl();
-    testTestLinearOrdergin();
-    testButterfly();
+    // testTestLinearOrdergin();
+    // testButterfly();
+
+    testKeyToMap();
 }
 
 void findmapfold(int rows, int columns)
@@ -646,7 +742,7 @@ void findmapfold(int rows, int columns)
     do
     {
         Map map = genMVmap(l, rowCount, columnCount);
-        IndegreeList idl = genIndegreeList(l, map);
+        IndegreeList idl = genIndegreeList(map);
 
         Key k = mapToKey(map);
 
@@ -670,7 +766,8 @@ void findmapfold(int rows, int columns)
 
 int main(int argc, char const *argv[])
 {
-    // test();
+    test();
+    /*
     if (argc < 3)
         return 0;
     int rows = std::stoi(argv[1]);
@@ -680,5 +777,29 @@ int main(int argc, char const *argv[])
     auto end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed_seconds = end - start;
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    */
     return 0;
+}
+
+std::vector<LinerOrdering> genalldnl(IndegreeList idl)
+{
+    std::vector<LinerOrdering> lo_list;
+    
+    return lo_list;
+}
+
+bool isFoldable(Key k)
+{
+    Map m = keyToMap(k);
+    IndegreeList idl = genIndegreeList(m);
+    std::vector<LinerOrdering> lo_list = genalldnl(idl);
+    for(int i = 0; i < lo_list.size(); i++){
+        if(testSouth(lo_list[i])
+        && testEast(lo_list[i])
+        && testWest(lo_list[i]))
+        {
+            return true;
+        }
+    }
+    return false;
 }
