@@ -17,7 +17,7 @@ enum MV
 };
 using Key = uint64_t;
 using LinerOrdering = std::vector<uint8_t>;
-using IndegreeList = std::vector<std::vector<uint8_t>>;
+using IndegreeList = std::vector<std::vector<int16_t>>;
 using MVPattern = std::vector<MV>;
 
 struct Map
@@ -26,15 +26,16 @@ struct Map
     std::vector<MVPattern> columnMvs;
 };
 
+char orderTocharTable[36] = {
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
+    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
+    'u', 'v', 'w', 'x', 'y', 'z'};
+
 class MapFoldList
 {
     using LinearOrderingList = std::vector<LinerOrdering>;
     std::unordered_map<Key, LinearOrderingList> map;
-    char orderTocharTable[36] = {
-        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-        'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-        'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-        'u', 'v', 'w', 'x', 'y', 'z'};
 
 public:
     bool addKey(Key k)
@@ -519,7 +520,7 @@ Map keyToMap(Key k)
         uint64_t thispow = pow(10, lenOfk - i - 1);
         int thisk = k / thispow;
         k -= thisk * thispow;
-        bool lastcolumn = lenOfk - i  == 1 ? true : false;
+        bool lastcolumn = lenOfk - i == 1 ? true : false;
         switch (thisk)
         {
         case 1:
@@ -527,7 +528,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(M);
             m.rowMvs[1].push_back(V);
             m.columnMvs[0].push_back(V);
-            if(lastcolumn) m.columnMvs[0].push_back(V);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(V);
             break;
         }
         case 2:
@@ -535,7 +537,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(V);
             m.rowMvs[1].push_back(M);
             m.columnMvs[0].push_back(V);
-            if(lastcolumn) m.columnMvs[0].push_back(V);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(V);
             break;
         }
         case 3:
@@ -543,7 +546,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(V);
             m.rowMvs[1].push_back(V);
             m.columnMvs[0].push_back(M);
-            if(lastcolumn) m.columnMvs[0].push_back(V);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(V);
             break;
         }
         case 4:
@@ -551,7 +555,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(V);
             m.rowMvs[1].push_back(V);
             m.columnMvs[0].push_back(V);
-            if(lastcolumn) m.columnMvs[0].push_back(M);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(M);
             break;
         }
         case 5:
@@ -559,7 +564,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(V);
             m.rowMvs[1].push_back(M);
             m.columnMvs[0].push_back(M);
-            if(lastcolumn) m.columnMvs[0].push_back(M);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(M);
             break;
         }
         case 6:
@@ -567,7 +573,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(M);
             m.rowMvs[1].push_back(V);
             m.columnMvs[0].push_back(M);
-            if(lastcolumn) m.columnMvs[0].push_back(M);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(M);
             break;
         }
 
@@ -576,7 +583,8 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(M);
             m.rowMvs[1].push_back(M);
             m.columnMvs[0].push_back(V);
-            if(lastcolumn) m.columnMvs[0].push_back(M);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(M);
             break;
         }
         case 8:
@@ -584,10 +592,12 @@ Map keyToMap(Key k)
             m.rowMvs[0].push_back(M);
             m.rowMvs[1].push_back(M);
             m.columnMvs[0].push_back(M);
-            if(lastcolumn) m.columnMvs[0].push_back(V);
+            if (lastcolumn)
+                m.columnMvs[0].push_back(V);
             break;
         }
-        default:{
+        default:
+        {
             assert(false);
         }
         }
@@ -715,9 +725,9 @@ void testButterfly()
     std::cout << testSouth(l) << std::endl;
 }
 
-void testKeyToMap(){
+void testKeyToMap()
+{
     auto thismap = keyToMap(122121);
-    
 }
 
 void test()
@@ -763,10 +773,20 @@ void findmapfold(int rows, int columns)
     mfl.print();
     std::cout << "total: " << mfl.getLen() << std::endl;
 }
+bool isFoldable(Key k);
 
 int main(int argc, char const *argv[])
 {
-    test();
+    // test();
+    if (isFoldable(14666531466))
+    {
+        std::cout << "Foldable" << std::endl;
+    }
+    else
+    {
+        std::cout << "not foldable" << std::endl;
+    }
+
     /*
     if (argc < 3)
         return 0;
@@ -784,7 +804,78 @@ int main(int argc, char const *argv[])
 std::vector<LinerOrdering> genalldnl(IndegreeList idl)
 {
     std::vector<LinerOrdering> lo_list;
-    
+    uint8_t rowLen = idl[0].size();
+    uint8_t rowCount = idl.size();
+    int nodecount = rowCount * rowLen;
+
+    struct State
+    {
+        LinerOrdering l;
+        int nodecount;
+        IndegreeList idl;
+    };
+    State state;
+    std::stack<State> sss;
+    LinerOrdering l;
+    sss.push(State{l, nodecount, idl});
+
+    while (!sss.empty())
+    {
+        State thisstate = sss.top();
+        sss.pop();
+        auto thislo = thisstate.l;
+        auto thislen = thisstate.nodecount;
+        auto thisidl = thisstate.idl;
+
+        if (thislen <= 0)
+        {
+            lo_list.push_back(thislo);
+        }
+        for (int r = 0; r < rowCount; r++)
+        {
+            for (int c = 0; c < rowLen; c++)
+            {
+                if (thisidl[r][c] == 0)
+                {
+                    IndegreeList new_idl(thisidl);
+
+                    uint8_t e = rowLen * r + c + 1;
+                    if (r > 0)
+                    {
+                        // not in the ¬first row
+                        if (new_idl[r - 1][c] > 0)
+                            new_idl[r - 1][c]--;
+                    }
+
+                    if (r < new_idl.size() - 1)
+                    {
+                        // not in the last row
+                        if (new_idl[r + 1][c] > 0)
+                            new_idl[r + 1][c]--;
+                    }
+
+                    if (c > 0)
+                    {
+                        //not in the first column
+                        if (new_idl[r][c - 1] > 0)
+                            new_idl[r][c - 1]--;
+                    }
+
+                    if (c < new_idl[r].size() - 1)
+                    {
+                        //not in the last column
+                        if (new_idl[r][c + 1] > 0)
+                            new_idl[r][c + 1]--;
+                    }
+
+                    LinerOrdering l(thislo);
+                    l.push_back(e);
+                    new_idl[r][c]--;
+                    sss.push(State{l, thislen - 1, new_idl});
+                }
+            }
+        }
+    }
     return lo_list;
 }
 
@@ -793,10 +884,9 @@ bool isFoldable(Key k)
     Map m = keyToMap(k);
     IndegreeList idl = genIndegreeList(m);
     std::vector<LinerOrdering> lo_list = genalldnl(idl);
-    for(int i = 0; i < lo_list.size(); i++){
-        if(testSouth(lo_list[i])
-        && testEast(lo_list[i])
-        && testWest(lo_list[i]))
+    for (int i = 0; i < lo_list.size(); i++)
+    {
+        if (testSouth(lo_list[i]) && testEast(lo_list[i]) && testWest(lo_list[i]))
         {
             return true;
         }
