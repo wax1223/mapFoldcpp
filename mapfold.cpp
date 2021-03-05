@@ -98,6 +98,9 @@ public:
             std::cout << k << ":" << allLO << std::endl;
         }
     }
+    void reset(){
+        map.clear();
+    }
 };
 
 bool nextPerm(LinerOrdering &p)
@@ -952,10 +955,13 @@ int main(int argc, char const *argv[])
     pl = new std::vector<Key>{1,2,3,4};
     for(int n = 0; n < 4; n++)
     {
-        pnl = new std::vector<Key>(pl->size() * 4);
+        auto start = std::chrono::high_resolution_clock::now();
+
+        pnl = new std::vector<Key>();
+        pnl->reserve(pl->size() * 4);
         MapFoldList mfl;
         getmapwithlast(pl, pnl);
-        auto nl = *pl;
+        auto nl = *pnl;
         for(int k = 0; k < nl.size(); k++){
             Map m = keyToMap(nl[k]);
             mfl.addKey(nl[k]);
@@ -971,9 +977,15 @@ int main(int argc, char const *argv[])
                 }
             }
         }
+  
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        mfl.print();
+        std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+        std::cout << "Len: " << mfl.getLen() << std::endl;
         delete(pl);
         pl = pnl;
-        mfl.print();
+        mfl.reset();
     }
     /*
     if (argc < 3)
