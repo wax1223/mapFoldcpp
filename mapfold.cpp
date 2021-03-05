@@ -730,18 +730,6 @@ void testKeyToMap()
     auto thismap = keyToMap(122121);
 }
 
-void test()
-{
-    // testPerm();
-    // testGenMVmap();
-    // testIndexList();
-    // testMapToKey();
-    // testMfl();
-    // testTestLinearOrdergin();
-    // testButterfly();
-
-    testKeyToMap();
-}
 
 void findmapfold(int rows, int columns)
 {
@@ -772,33 +760,6 @@ void findmapfold(int rows, int columns)
     } while (nextPerm(l));
     mfl.print();
     std::cout << "total: " << mfl.getLen() << std::endl;
-}
-bool isFoldable(Key k);
-
-int main(int argc, char const *argv[])
-{
-    // test();
-    if (isFoldable(14666531466))
-    {
-        std::cout << "Foldable" << std::endl;
-    }
-    else
-    {
-        std::cout << "not foldable" << std::endl;
-    }
-
-    /*
-    if (argc < 3)
-        return 0;
-    int rows = std::stoi(argv[1]);
-    int columns = std::stoi(argv[2]);
-    auto start = std::chrono::high_resolution_clock::now();
-    findmapfold(rows, columns);
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-    */
-    return 0;
 }
 
 std::vector<LinerOrdering> genalldnl(IndegreeList idl)
@@ -892,4 +853,138 @@ bool isFoldable(Key k)
         }
     }
     return false;
+}
+
+void getmapwithlast(std::vector<Key>* l, std::vector<Key>* nl)
+{
+    static uint8_t nextList[][4] = {
+        {1, 2, 4, 7},
+        {1, 2, 4, 7},
+        {1, 2, 4, 7},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {1, 2, 4, 7},
+    };
+
+    for (int i = 0; i < l->size(); i++)
+    {
+        Key lastKey = (*l)[i];
+        uint8_t lastNumber = lastKey % 10;
+        uint8_t *next = nextList[lastNumber - 1];
+        nl->push_back(lastKey * 10 + next[0]);
+        nl->push_back(lastKey * 10 + next[1]);
+        nl->push_back(lastKey * 10 + next[2]);
+        nl->push_back(lastKey * 10 + next[3]);
+    }
+}
+/*
+std::vector<Key> getmap(int n)
+{
+    std::vector<Key> keyList;
+    keyList.reserve(pow(4, n));
+    static std::vector<Key> begin = {1,2,3,4};
+    static uint8_t nextList[][4] = {
+        {1, 2, 4, 7},
+        {1, 2, 4, 7},
+        {1, 2, 4, 7},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {3, 5, 6, 8},
+        {1, 2, 4, 7},
+    };
+
+    Key k = 1111111;
+    std::vector<uint8_t> lastkey(1, n);
+    for(int i = n - 1 - 1; i >= 0; i--)
+    {
+       for(int j = i; j < n; j++) 
+       {
+           uint8_t lastnumber = lastkey[j];
+           uint8_t *next = nextList[lastnumber];
+
+           keyList.push_back()
+       }
+    }
+
+    for (int i = 0; i < l.size(); i++)
+    {
+        Key lastKey = l[i];
+        uint8_t lastNumber = lastKey % 10;
+        uint8_t *next = nextList[lastNumber - 1];
+        keyList.push_back(lastKey * 10 + next[0]);
+        keyList.push_back(lastKey * 10 + next[1]);
+        keyList.push_back(lastKey * 10 + next[2]);
+        keyList.push_back(lastKey * 10 + next[3]);
+    }
+
+    return keyList;
+}
+
+*/
+void test()
+{
+    // testPerm();
+    // testGenMVmap();
+    // testIndexList();
+    // testMapToKey();
+    // testMfl();
+    // testTestLinearOrdergin();
+    // testButterfly();
+
+    // if (isFoldable(14666531466))
+    // {
+    //     std::cout << "Foldable" << std::endl;
+    // }
+    // else
+    // {
+    //     std::cout << "not foldable" << std::endl;
+    // }
+    testKeyToMap();
+}
+
+int main(int argc, char const *argv[])
+{
+    // test();
+    std::vector<Key>* pl, *pnl;
+    pl = new std::vector<Key>{1,2,3,4};
+    for(int n = 0; n < 4; n++)
+    {
+        pnl = new std::vector<Key>(pl->size() * 4);
+        MapFoldList mfl;
+        getmapwithlast(pl, pnl);
+        auto nl = *pl;
+        for(int k = 0; k < nl.size(); k++){
+            Map m = keyToMap(nl[k]);
+            mfl.addKey(nl[k]);
+            IndegreeList idl = genIndegreeList(m);
+            std::vector<LinerOrdering> los = genalldnl(idl);
+            for(auto& lo : los){
+                if(testSouth(lo)
+                && testEast(lo)
+                && testWest(lo))
+                {
+                    mfl.addElem(nl[k], lo);
+                    break;//Only need to know whether is flat foladble or not
+                }
+            }
+        }
+        delete(pl);
+        pl = pnl;
+        mfl.print();
+    }
+    /*
+    if (argc < 3)
+        return 0;
+    int rows = std::stoi(argv[1]);
+    int columns = std::stoi(argv[2]);
+    auto start = std::chrono::high_resolution_clock::now();
+    findmapfold(rows, columns);
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    */
+    return 0;
 }
